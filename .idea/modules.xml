@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/instrabaho/instrabaho.iml" filepath="$PROJECT_DIR$/instrabaho/instrabaho.iml" />
+      <module fileurl="file://$PROJECT_DIR$/instrabaho/android/instrabaho_android.iml" filepath="$PROJECT_DIR$/instrabaho/android/instrabaho_android.iml" />
+    </modules>
+  </component>
+</project>
