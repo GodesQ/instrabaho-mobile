@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instrabaho/bloc/auth_toggle/auth_toggle_bloc.dart';
+import 'package:instrabaho/component/myText.dart';
+import 'package:instrabaho/screens/auth_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:lottie/lottie.dart';
 
 class IntroSlider extends StatefulWidget {
   const IntroSlider({Key? key}) : super(key: key);
@@ -34,94 +39,110 @@ class _IntroSliderState extends State<IntroSlider> {
             Container(
               color: Colors.white,
               child: buildPage(
-                  'assets/identity.json',
+                  'assets/slide-1.json',
                   'Gusto mo ba ng instant na trabaho?',
                   'Aliqua culpa mollit nisi irure sit incididunt quis exercitation reprehenderit et minim.'),
             ),
             Container(
               color: Colors.white,
               child: buildPage(
-                  'assets/create.json',
+                  'assets/slide-2.json',
                   'Gusto mo kumita ng instant?',
                   'Aliqua culpa mollit nisi irure sit incididunt quis exercitation reprehenderit et minim.'),
             ),
             Container(
                 color: Colors.white,
                 child: buildPage(
-                    'assets/learn.json',
+                    'assets/slide-3.json',
                     'Sa Instrabaho posible ang lahat',
                     'Aliqua culpa mollit nisi irure sit incididunt quis exercitation reprehenderit et minim.'))
           ],
         ),
       ),
-      bottomSheet: isLastPage
-          ? Container(
-              height: 80,
-              color: Colors.white,
-              child: Center(
-                child: SizedBox(
-                  height: 80,
-                  width: 1000,
-                  child: TextButton(
-                    onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      prefs.setBool('showHome', true);
-                      if (!mounted) {
-                        return;
-                      }
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, '/auth_screen', (route) => false);
+      bottomSheet: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        height: 150,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                    onPressed: () {
+                      pageController.jumpToPage(2);
                     },
                     child: const Text(
-                      'Get Started',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 19,
-                          color: Colors.orange),
-                    ),
+                      'SKIP',
+                      style: TextStyle(color: Colors.blue),
+                    )),
+                Center(
+                  child: SmoothPageIndicator(
+                    controller: pageController,
+                    effect: const ExpandingDotsEffect(
+                        dotWidth: 10,
+                        dotHeight: 10,
+                        dotColor: Colors.orange,
+                        activeDotColor: Colors.blueAccent),
+                    onDotClicked: (index) => pageController.jumpToPage(index),
+                    count: 3,
+                  ),
+                ),
+                TextButton(
+                    onPressed: () {
+                      if (isLastPage) {
+                        pageController.jumpToPage(0);
+                      } else {
+                        pageController.nextPage(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut);
+                      }
+                    },
+                    child: Text(
+                      isLastPage ? 'Back' : 'Next',
+                      style: const TextStyle(color: Colors.blueAccent),
+                    ))
+              ],
+            ),
+            InkWell(
+              onTap: () async {
+                BlocProvider.of<AuthToggleBloc>(context)
+                    .add(SwitchToLoginEvent());
+                pushToAuthWrapper(false);
+              },
+              splashColor: Colors.orange,
+              child: Ink(
+                child: Container(
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const [
+                      MyText(
+                        text: 'Login',
+                        size: 14,
+                        type: 'heading',
+                        color: Colors.white,
+                      )
+                    ],
                   ),
                 ),
               ),
-            )
-          : Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              height: 80,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        pageController.jumpToPage(2);
-                      },
-                      child: const Text(
-                        'SKIP',
-                        style: TextStyle(color: Colors.white),
-                      )),
-                  Center(
-                    child: SmoothPageIndicator(
-                      controller: pageController,
-                      effect: const ExpandingDotsEffect(
-                          dotWidth: 10,
-                          dotHeight: 10,
-                          dotColor: Colors.blueGrey,
-                          activeDotColor: Colors.orangeAccent),
-                      onDotClicked: (index) => pageController.jumpToPage(index),
-                      count: 3,
-                    ),
-                  ),
-                  TextButton(
-                      onPressed: () {
-                        pageController.nextPage(
-                            duration: const Duration(seconds: 1),
-                            curve: Curves.easeInOut);
-                      },
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(color: Colors.white),
-                      ))
-                ],
-              ),
             ),
+            TextButton(
+                onPressed: () async {
+                  BlocProvider.of<AuthToggleBloc>(context)
+                      .add(SwitchToRegisterEvent());
+                  await pushToAuthWrapper(true);
+                },
+                child:
+                    const MyText(text: 'New to instrabaho? Sign up', size: 14))
+          ],
+        ),
+      ),
     );
   }
 
@@ -132,10 +153,10 @@ class _IntroSliderState extends State<IntroSlider> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Lottie.asset(path, width: 250),
-              // const SizedBox(
-              //   height: 10,
-              // ),
+              Lottie.asset(path, width: 250),
+              const SizedBox(
+                height: 10,
+              ),
               Text(
                 title,
                 textAlign: TextAlign.center,
@@ -161,4 +182,20 @@ class _IntroSliderState extends State<IntroSlider> {
           ),
         ),
       );
+
+  Future pushToAuthWrapper(bool fromRegister) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('showHome', true);
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+            builder: (context) => AuthenticationScreen(
+                  fromRegister: fromRegister,
+                )),
+        (route) => false);
+  }
 }
